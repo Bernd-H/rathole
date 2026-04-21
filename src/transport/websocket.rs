@@ -180,6 +180,7 @@ enum SubTransport {
 pub struct WebsocketTransport {
     sub: SubTransport,
     conf: WebSocketConfig,
+    ws_path: String,
 }
 
 #[async_trait]
@@ -202,7 +203,14 @@ impl Transport for WebsocketTransport {
             true => SubTransport::Secure(TlsTransport::new(config)?),
             false => SubTransport::Insecure(TcpTransport::new(config)?),
         };
-        Ok(WebsocketTransport { sub, conf })
+        let ws_path = if wsconfig.path.trim().is_empty() {
+            "/".to_string()
+        } else if wsconfig.path.starts_with('/') {
+            wsconfig.path.clone()
+        } else {
+            format!("/{}", wsconfig.path)
+        };
+        Ok(WebsocketTransport { sub, conf, ws_path })
     }
 
     fn hint(conn: &Self::Stream, opt: SocketOpts) {
@@ -237,7 +245,7 @@ impl Transport for WebsocketTransport {
     }
 
     async fn connect(&self, addr: &AddrMaybeCached) -> anyhow::Result<Self::Stream> {
-        let u = format!("ws://{}", &addr.addr.as_str());
+        let u = format!("ws://{}{}", &addr.addr.as_str(), self.ws_path);
         let url = Url::parse(&u).unwrap();
         let tstream = match &self.sub {
             SubTransport::Insecure(t) => TransportStream::Insecure(t.connect(addr).await?),

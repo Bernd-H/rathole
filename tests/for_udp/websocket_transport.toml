@@ -6,6 +6,7 @@ default_token = "default_token_if_not_specify"
 type = "websocket"
 [client.transport.websocket] 
 tls = false
+path = "/rathole/ws"
 
 [client.services.echo] 
 type = "udp"

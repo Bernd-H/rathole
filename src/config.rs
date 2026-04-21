@@ -141,6 +141,12 @@ pub struct NoiseConfig {
 #[serde(deny_unknown_fields)]
 pub struct WebsocketConfig {
     pub tls: bool,
+    #[serde(default = "default_websocket_path")]
+    pub path: String,
+}
+
+fn default_websocket_path() -> String {
+    "/".to_string()
 }
 
 fn default_nodelay() -> bool {
@@ -491,6 +497,72 @@ mod tests {
                 .0,
             "4"
         );
+        Ok(())
+    }
+
+    #[test]
+    fn test_websocket_path_default_and_custom() -> Result<()> {
+        let cfg_default = Config::from_str(
+            r#"
+[client]
+remote_addr = "127.0.0.1:2333"
+default_token = "default_token_if_not_specify"
+
+[client.transport]
+type = "websocket"
+
+[client.transport.websocket]
+tls = false
+
+[client.services.echo]
+local_addr = "127.0.0.1:8080"
+"#,
+        )?;
+
+        assert_eq!(
+            cfg_default
+                .client
+                .as_ref()
+                .unwrap()
+                .transport
+                .websocket
+                .as_ref()
+                .unwrap()
+                .path,
+            "/"
+        );
+
+        let cfg_custom = Config::from_str(
+            r#"
+[client]
+remote_addr = "127.0.0.1:2333"
+default_token = "default_token_if_not_specify"
+
+[client.transport]
+type = "websocket"
+
+[client.transport.websocket]
+tls = false
+path = "/rathole/ws"
+
+[client.services.echo]
+local_addr = "127.0.0.1:8080"
+"#,
+        )?;
+
+        assert_eq!(
+            cfg_custom
+                .client
+                .as_ref()
+                .unwrap()
+                .transport
+                .websocket
+                .as_ref()
+                .unwrap()
+                .path,
+            "/rathole/ws"
+        );
+
         Ok(())
     }
 }

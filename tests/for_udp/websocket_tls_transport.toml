@@ -9,6 +9,7 @@ trusted_root = "examples/tls/rootCA.crt"
 hostname = "localhost"
 [client.transport.websocket] 
 tls = true
+path = "/rathole/ws"
 
 [client.services.echo] 
 type = "udp"

@@ -128,6 +128,7 @@ remote_public_key = "key_encoded_in_base64" # Optional
 
 [client.transport.websocket] # Necessary if `type` is "websocket"
 tls = true # If `true` then it will use settings in `client.transport.tls`
+path = "/rathole/ws" # Optional. Client 连接时使用的 WebSocket URL 路径。默认值: "/"
 
 [client.services.service1] # A service that needs forwarding. The name `service1` can change arbitrarily, as long as identical to the name in the server's configuration
 type = "tcp" # Optional. The protocol that needs forwarding. Possible values: ["tcp", "udp"]. Default: "tcp"
