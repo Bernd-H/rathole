@@ -24,8 +24,6 @@ use tokio_tungstenite::{accept_async_with_config, client_async_with_config, WebS
 use tokio_util::io::StreamReader;
 use url::Url;
 
-use tracing::info;
-
 #[derive(Debug)]
 enum TransportStream {
     Insecure(TcpStream),
@@ -247,20 +245,12 @@ impl Transport for WebsocketTransport {
     }
 
     async fn connect(&self, addr: &AddrMaybeCached) -> anyhow::Result<Self::Stream> {
-        info!("CONNECT ENTERED");
-        eprintln!("[WEBSOCKET] connect() CALLED for addr: {:?}", addr);
-
-        /*let scheme = match self.sub {
+        let scheme = match self.sub {
             SubTransport::Secure(_) => "wss",
             SubTransport::Insecure(_) => "ws",
-        };*/
-        let scheme = "wss";
-        eprintln!("[WEBSOCKET] building url...");
+        };
         let u = format!("{}://{}{}", scheme, &addr.addr.as_str(), self.ws_path);
-        eprintln!("[WEBSOCKET] raw url string: {}", u);
         let url = Url::parse(&u).unwrap();
-        eprintln!("[WEBSOCKET] parsed url: {}", url);
-        eprintln!("[WEBSOCKET] about to establish TCP/TLS stream");
         let tstream = match &self.sub {
             SubTransport::Insecure(t) => TransportStream::Insecure(t.connect(addr).await?),
             SubTransport::Secure(t) => TransportStream::Secure(t.connect(addr).await?),
