@@ -245,7 +245,11 @@ impl Transport for WebsocketTransport {
     }
 
     async fn connect(&self, addr: &AddrMaybeCached) -> anyhow::Result<Self::Stream> {
-        let u = format!("ws://{}{}", &addr.addr.as_str(), self.ws_path);
+        let scheme = match self.sub {
+            SubTransport::Secure(_) => "wss",
+            SubTransport::Insecure(_) => "ws",
+        };
+        let u = format!("{}://{}{}", scheme, &addr.addr.as_str(), self.ws_path);
         let url = Url::parse(&u).unwrap();
         let tstream = match &self.sub {
             SubTransport::Insecure(t) => TransportStream::Insecure(t.connect(addr).await?),
